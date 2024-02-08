@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Update PoC</string>
+    <string name="app_name">Emteria Update SDK Sample</string>
 
     <string name="update_button_get_update">Check for updates</string>
     <string name="update_button_download_update">Download update</string>

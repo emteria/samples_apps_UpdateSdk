@@ -275,7 +275,6 @@ public class MainActivity extends AppCompatActivity
         @Override
         public void handleMessage(Message msg)
         {
-            Log.i(TAG, "handleMessage()");
             MessengerConfig.ResponseReason[] values = MessengerConfig.ResponseReason.values();
 
             int index = msg.what;
