@@ -1,36 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:background="@color/emteria_bg"
-    tools:context=".MainActivity">
+    android:layout_height="match_parent">
 
-    <RelativeLayout
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
-
-        <com.google.android.material.appbar.AppBarLayout
-            android:layout_width="match_parent"
-            android:layout_height="56dp"
-            android:background="@color/emteria_primary"
-            android:gravity="center">
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:padding="5dp"
-                android:text="@string/app_name"
-                android:textColor="@color/emteria_bg" />
-
-        </com.google.android.material.appbar.AppBarLayout>
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="32dp"
+        android:gravity="center_horizontal">
 
         <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:layout_marginTop="80dp"
-            android:layout_alignParentEnd="true">
+            android:orientation="horizontal">
 
             <TextView
                 android:layout_width="wrap_content"
@@ -41,70 +24,54 @@
             <Spinner
                 android:id="@+id/stability_channel_spinner"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginEnd="20dp"
-                android:layout_alignParentEnd="true" />
-
+                android:layout_height="wrap_content" />
 
         </LinearLayout>
-
-        <TextView
-            android:id="@+id/version_details"
-            android:layout_width="250dp"
-            android:layout_height="150dp"
-            android:layout_centerHorizontal="true"
-            android:layout_marginTop="110dp"
-            android:gravity="center"
-            android:padding="5dp"
-            android:textColor="@color/black" />
-
-        <ProgressBar
-            android:id="@+id/progressBar"
-            style="?android:attr/progressBarStyleHorizontal"
-            android:layout_width="200dp"
-            android:layout_height="wrap_content"
-            android:layout_centerHorizontal="true"
-            android:layout_marginTop="300dp" />
-
-        <Button
-            android:id="@+id/get_update_button"
-            android:layout_width="200dp"
-            android:layout_height="wrap_content"
-            android:layout_centerHorizontal="true"
-            android:layout_marginTop="350dp"
-            android:backgroundTint="@color/emteria_primary"
-            android:onClick="startGettingVersionOnClick"
-            android:text="@string/update_button_get_update" />
-
-        <Button
-            android:id="@+id/download_update_button"
-            android:layout_width="200dp"
-            android:layout_height="wrap_content"
-            android:layout_centerHorizontal="true"
-            android:layout_marginTop="400dp"
-            android:backgroundTint="@color/emteria_primary"
-            android:onClick="startDownloadOnClick"
-            android:text="@string/update_button_download_update" />
-
-        <Button
-            android:id="@+id/flash_device_button"
-            android:layout_width="200dp"
-            android:layout_height="wrap_content"
-            android:layout_centerHorizontal="true"
-            android:layout_marginTop="450dp"
-            android:backgroundTint="@color/emteria_primary"
-            android:onClick="startFlashingOnClick"
-            android:text="@string/install_update" />
 
         <Switch
             android:id="@+id/connection_type_switch"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_centerHorizontal="true"
-            android:layout_marginTop="500dp"
+            android:layout_marginTop="32dp"
             android:text="Allow updates only via wifi"
             android:onClick="setConnectionTypePreference" />
 
-    </RelativeLayout>
+        <TextView
+            android:id="@+id/version_details"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="64dp"
+            android:gravity="center"
+            android:padding="5dp" />
+
+        <ProgressBar
+            android:id="@+id/progressBar"
+            style="?android:attr/progressBarStyleHorizontal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+
+        <Button
+            android:id="@+id/get_update_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="64dp"
+            android:onClick="startOtaSearch"
+            android:text="@string/update_button_get_update" />
+
+        <Button
+            android:id="@+id/download_update_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:onClick="startOtaDownload"
+            android:text="@string/update_button_download_update" />
+
+        <Button
+            android:id="@+id/flash_device_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:onClick="startOtaInstallation"
+            android:text="@string/install_update" />
+
+    </LinearLayout>
 
 </ScrollView>

@@ -1,10 +1,10 @@
 <resources>
     <string name="app_name">Update PoC</string>
 
-    <string name="update_button_get_update">Get Update</string>
-    <string name="update_button_download_update">Download Update</string>
+    <string name="update_button_get_update">Check for updates</string>
+    <string name="update_button_download_update">Download update</string>
     <string name="install_update">Install update</string>
-    <string name="update_information">Update Information</string>
+    <string name="update_information">Update information</string>
     <string name="information_text_view">Information box</string>
     <string name="spinner_label">Stability channel:</string>
 
