@@ -46,7 +46,7 @@ public class MainActivity extends AppCompatActivity
 
     private boolean mBound = false;
 
-    private Button mHandleUpdateButton;
+    private Button mFindUpdateButton;
     private Button mDownloadButton;
     private Button mFlashButton;
     private Switch mConnectionSwitch;
@@ -81,10 +81,9 @@ public class MainActivity extends AppCompatActivity
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        Log.i(TAG, "binding update service");
         bindUpdateService();
 
-        mHandleUpdateButton = findViewById(R.id.get_update_button);
+        mFindUpdateButton = findViewById(R.id.get_update_button);
         mDownloadButton = findViewById(R.id.download_update_button);
         mFlashButton = findViewById(R.id.flash_device_button);
         mInformationTV = findViewById(R.id.version_details);
@@ -92,7 +91,7 @@ public class MainActivity extends AppCompatActivity
         mConnectionSwitch = findViewById(R.id.connection_type_switch);
         mChannelSpinner = findViewById(R.id.stability_channel_spinner);
 
-        mHandleUpdateButton.setEnabled(true);
+        mFindUpdateButton.setEnabled(true);
         mDownloadButton.setEnabled(false);
         mFlashButton.setEnabled(false);
 
@@ -102,17 +101,17 @@ public class MainActivity extends AppCompatActivity
 
     private void bindUpdateService()
     {
-        Log.i(TAG, "bindUpdateService()");
+        Log.d(TAG, "bindUpdateService()");
         if (!mBound)
         {
-            boolean bindingresult = bindService(MessengerConfig.getServiceBindIntent(), mConnection, Context.BIND_AUTO_CREATE);
-            Log.i(TAG, "bindingresult: " + bindingresult);
+            boolean binding = bindService(MessengerConfig.getServiceBindIntent(), mConnection, Context.BIND_AUTO_CREATE);
+            Log.i(TAG, "Service bind result: " + binding);
         }
     }
 
     private void unbindUpdateService()
     {
-        Log.i(TAG, "unbindUpdateService()");
+        Log.d(TAG, "unbindUpdateService()");
         if (mBound)
         {
             unbindService(mConnection);
@@ -183,6 +182,7 @@ public class MainActivity extends AppCompatActivity
         try
         {
             mInformationTV.setText("Downloading update");
+            mDownloadButton.setEnabled(false);
             mProgressBar.setIndeterminate(true);
             Message requestMessage = OtaDownloadContract.DownloadRequest.buildMessage(mResponseMessenger, mOtaPackage);
             mRequestMessenger.send(requestMessage);
@@ -305,11 +305,9 @@ public class MainActivity extends AppCompatActivity
 
                     case GET_OTA_RESULT:
                         mOtaPackage = OtaMetadataContract.OtaMetadataResponse.extractOtaList(payload);
-                        Log.i(TAG, "Found version: " + mOtaPackage.getVersion());
-
+                        Log.i(TAG, "Found new OTA: " + mOtaPackage);
                         String versionText = getString(R.string.image_version_message, mOtaPackage.getVersion(), mOtaPackage.getChannel(), String.valueOf(mOtaPackage.getSize()));
                         mInformationTV.setText(Html.fromHtml(versionText, Html.FROM_HTML_MODE_LEGACY));
-                        mHandleUpdateButton.setEnabled(false);
                         mDownloadButton.setEnabled(true);
                         break;
 
@@ -325,18 +323,11 @@ public class MainActivity extends AppCompatActivity
 
                     case DOWNLOAD_OTA_SUCCESS:
                         mOtaPackage = OtaDownloadContract.DownloadSuccessResponse.parseBundle(payload);
-
-                        // don't proceed if hashes don't match
-                        if (!mOtaPackage.isValidated())
-                        {
-                            mInformationTV.setText("Package validation failed");
-                        }
-                        else
-                        {
-                            mInformationTV.setText("Download successful in " + mOtaPackage.getFile().getAbsolutePath());
-                            mDownloadButton.setEnabled(false);
-                            mFlashButton.setEnabled(true);
-                        }
+                        Log.i(TAG, "OTA download finished: " + mOtaPackage);
+                        mInformationTV.setText("Download successful");
+                        mFindUpdateButton.setEnabled(true);
+                        mDownloadButton.setEnabled(false);
+                        mFlashButton.setEnabled(true);
                         break;
 
                     case INSTALL_OTA_ERROR:
@@ -349,8 +340,9 @@ public class MainActivity extends AppCompatActivity
                         setProgress(installProgress);
                         break;
 
-                    case INSTALL_OTA_REBOOT:
+                    case INSTALL_OTA_REBOOT_REQUIRED:
                         mInformationTV.setText("Installation complete, reboot required");
+                        mFlashButton.setEnabled(false);
                         break;
 
                     default:
