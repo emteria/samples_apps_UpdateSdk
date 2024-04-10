@@ -11,32 +11,6 @@
         android:padding="32dp"
         android:gravity="center_horizontal">
 
-        <LinearLayout
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal">
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginEnd="8dp"
-                android:text="@string/spinner_label"/>
-
-            <Spinner
-                android:id="@+id/stability_channel_spinner"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content" />
-
-        </LinearLayout>
-
-        <Switch
-            android:id="@+id/connection_type_switch"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="32dp"
-            android:text="Allow updates only via wifi"
-            android:onClick="setConnectionTypePreference" />
-
         <TextView
             android:id="@+id/version_details"
             android:layout_width="wrap_content"
@@ -52,10 +26,17 @@
             android:layout_height="wrap_content" />
 
         <Button
-            android:id="@+id/get_update_button"
+            android:id="@+id/get_os_version"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="64dp"
+            android:onClick="getOsVersion"
+            android:text="@string/get_os_version" />
+
+        <Button
+            android:id="@+id/get_update_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
             android:onClick="startOtaSearch"
             android:text="@string/update_button_get_update" />
 

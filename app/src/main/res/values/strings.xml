@@ -1,6 +1,7 @@
 <resources>
     <string name="app_name">Emteria Update SDK Sample</string>
 
+    <string name="get_os_version">Get OS version</string>
     <string name="update_button_get_update">Check for updates</string>
     <string name="update_button_download_update">Download update</string>
     <string name="install_update">Install update</string>
@@ -8,7 +9,9 @@
     <string name="information_text_view">Information box</string>
     <string name="spinner_label">Stability channel:</string>
 
-    <string name="image_version_message"><![CDATA[Found new version:<br>Version: %1$s<br>Channel: %2$s<br>Size: %3$s]]></string>
+    <string name="updates_message">
+        <![CDATA[<b>Found a total of %1$s OS updates</b><br>Latest: %2$s<br>Channel: %3$s<br>Size: %4$s]]>
+    </string>
 
     <string-array name="spinner_values">
         <item>Live</item>

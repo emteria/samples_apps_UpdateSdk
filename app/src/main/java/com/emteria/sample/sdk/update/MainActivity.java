@@ -12,35 +12,34 @@ import android.os.RemoteException;
 import android.text.Html;
 import android.util.Log;
 import android.view.View;
-import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ProgressBar;
-import android.widget.Spinner;
 import android.widget.Switch;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.emteria.update.contract.MessengerConfig;
-import com.emteria.update.contract.managers.OtaDownloadContract;
-import com.emteria.update.contract.managers.OtaInstallationContract;
-import com.emteria.update.contract.managers.OtaMetadataContract;
-import com.emteria.update.contract.managers.OtaPreferenceContract;
-import com.emteria.update.contract.models.OtaChannel;
-import com.emteria.update.contract.models.OtaPackage;
+import com.emteria.update.contract.exceptions.InvalidUpdatePayloadException;
+import com.emteria.update.contract.managers.OsVersionContract;
+import com.emteria.update.contract.managers.UpdateDownloadContract;
+import com.emteria.update.contract.managers.UpdateInstallationContract;
+import com.emteria.update.contract.managers.UpdateMetadataContract;
+import com.emteria.update.contract.models.UpdatePackage;
+
+import java.util.List;
 
 public class MainActivity extends AppCompatActivity
 {
-    private static final String TAG = "ExternalUpdateSample - MainActivity";
+    private static final String TAG = "MainActivity";
 
     /**
-     * Messenger for sending requests to the Service
+     * Messenger for sending requests to the remote service.
      */
     private Messenger mRequestMessenger;
+
     /**
-     * Messenger for receiving callback messages
+     * Messenger for receiving callback messages.
      */
     private Messenger mResponseMessenger;
 
@@ -52,9 +51,8 @@ public class MainActivity extends AppCompatActivity
     private Switch mConnectionSwitch;
     private TextView mInformationTV;
     private ProgressBar mProgressBar;
-    private Spinner mChannelSpinner;
 
-    private OtaPackage mOtaPackage;
+    private UpdatePackage mOtaPackage;
 
     private final ServiceConnection mConnection = new ServiceConnection()
     {
@@ -88,15 +86,12 @@ public class MainActivity extends AppCompatActivity
         mFlashButton = findViewById(R.id.flash_device_button);
         mInformationTV = findViewById(R.id.version_details);
         mProgressBar = findViewById(R.id.progressBar);
-        mConnectionSwitch = findViewById(R.id.connection_type_switch);
-        mChannelSpinner = findViewById(R.id.stability_channel_spinner);
 
         mFindUpdateButton.setEnabled(true);
         mDownloadButton.setEnabled(false);
         mFlashButton.setEnabled(false);
 
         mResponseMessenger = new Messenger(new CallbackHandler());
-        initChannelSpinner(getApplicationContext());
     }
 
     private void bindUpdateService()
@@ -120,31 +115,9 @@ public class MainActivity extends AppCompatActivity
         }
     }
 
-    private void initChannelSpinner(Context context)
+    public void getOsVersion(View v)
     {
-        ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(context, R.array.spinner_values, android.R.layout.simple_spinner_item);
-        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        mChannelSpinner.setAdapter(adapter);
-        mChannelSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener()
-        {
-            @Override
-            public void onItemSelected(AdapterView<?> parent, View view, int position, long id)
-            {
-                setChannelPreference(OtaChannel.parseChannelIndex(position));
-            }
-
-            @Override
-            public void onNothingSelected(AdapterView<?> parent)
-            {
-                // standard channel is live
-                setChannelPreference(OtaChannel.LIVE);
-            }
-        });
-    }
-
-    public void startOtaSearch(View v)
-    {
-        Log.i(TAG, "Get update clicked");
+        Log.i(TAG, "Get OS version");
 
         if (!mBound)
         {
@@ -155,22 +128,48 @@ public class MainActivity extends AppCompatActivity
 
         try
         {
-            mInformationTV.setText("Getting latest version");
+            mInformationTV.setText("Getting OS version...");
             mProgressBar.setIndeterminate(true);
 
-            Message requestMessage = OtaMetadataContract.OtaMetadataRequest.buildMessage(mResponseMessenger);
+            Message requestMessage = OsVersionContract.OsVersionRequest.buildMessage(mResponseMessenger);
             mRequestMessenger.send(requestMessage);
         }
         catch (RemoteException e)
         {
-            mInformationTV.setText("RemoteException");
+            mInformationTV.setText("RemoteException: " + e.getMessage());
+            Log.e(TAG, "RemoteException", e);
+        }
+    }
+
+    public void startOtaSearch(View v)
+    {
+        Log.i(TAG, "Get available updates");
+
+        if (!mBound)
+        {
+            mInformationTV.setText("Service not bound, try again");
+            Log.e(TAG, "Service not bound");
+            return;
+        }
+
+        try
+        {
+            mInformationTV.setText("Getting updates...");
+            mProgressBar.setIndeterminate(true);
+
+            Message requestMessage = UpdateMetadataContract.MetadataRequest.buildMessage(mResponseMessenger, false);
+            mRequestMessenger.send(requestMessage);
+        }
+        catch (RemoteException e)
+        {
+            mInformationTV.setText("RemoteException: " + e.getMessage());
             Log.e(TAG, "RemoteException", e);
         }
     }
 
     public void startOtaDownload(View v)
     {
-        Log.i(TAG, "Download update clicked with version " + mOtaPackage);
+        Log.i(TAG, "Download update " + mOtaPackage);
 
         if (!mBound)
         {
@@ -184,7 +183,7 @@ public class MainActivity extends AppCompatActivity
             mInformationTV.setText("Downloading update");
             mDownloadButton.setEnabled(false);
             mProgressBar.setIndeterminate(true);
-            Message requestMessage = OtaDownloadContract.DownloadRequest.buildMessage(mResponseMessenger, mOtaPackage);
+            Message requestMessage = UpdateDownloadContract.DownloadRequest.buildMessage(mResponseMessenger, mOtaPackage.getUpdateId());
             mRequestMessenger.send(requestMessage);
         }
         catch (RemoteException e)
@@ -208,57 +207,13 @@ public class MainActivity extends AppCompatActivity
         try
         {
             mInformationTV.setText("Flashing update, the device would normally reboot to update.");
-            Message requestMessage = OtaInstallationContract.InstallationRequest.buildMessage(mResponseMessenger, mOtaPackage);
+            Message requestMessage = UpdateInstallationContract.InstallationRequest.buildMessage(mResponseMessenger, mOtaPackage.getUpdateId());
             mRequestMessenger.send(requestMessage);
         }
         catch (RemoteException e)
         {
             mInformationTV.setText("RemoteException");
             Log.e(TAG, "RemoteException", e);
-        }
-    }
-
-    public void setConnectionTypePreference(View v)
-    {
-        mConnectionSwitch.setOnCheckedChangeListener((buttonView, isChecked) ->
-        {
-            if (isChecked)
-            {
-                Toast.makeText(getApplicationContext(), "Only wifi downloads", Toast.LENGTH_SHORT).show();
-            }
-            else
-            {
-                Toast.makeText(getApplicationContext(), "All connections allowed", Toast.LENGTH_SHORT).show();
-            }
-            try
-            {
-                Message requestMessage = OtaPreferenceContract.WifiPreferenceRequest.buildMessage(mResponseMessenger, isChecked);
-                mRequestMessenger.send(requestMessage);
-            }
-            catch (RemoteException e)
-            {
-                Log.e(TAG, "Can't change preferences", e);
-            }
-        });
-    }
-
-    public void setChannelPreference(OtaChannel channel)
-    {
-        if (!mBound)
-        {
-            mInformationTV.setText("Service not bound, try again");
-            Log.e(TAG, "Service not bound");
-            return;
-        }
-
-        try
-        {
-            Message requestMessage = OtaPreferenceContract.ChannelPreferenceRequest.buildMessage(mResponseMessenger, channel);
-            mRequestMessenger.send(requestMessage);
-        }
-        catch (RemoteException e)
-        {
-            Log.e(TAG, "Can't change preferences", e);
         }
     }
 
@@ -294,53 +249,64 @@ public class MainActivity extends AppCompatActivity
             {
                 switch (reason)
                 {
-                    case GET_OTA_UP_TO_DATE:
+                    case GET_OS_VERSION_ERROR:
+                        String versionError = OsVersionContract.OsVersionErrorResponse.extractErrorMessage(payload);
+                        mInformationTV.setText("Could not receive OS version: " + versionError);
+                        break;
+
+                    case GET_OS_VERSION_RESULT:
+                        String versionResult = OsVersionContract.OsVersionResultResponse.extractOsVersion(payload);
+                        mInformationTV.setText("Current OS version: " + versionResult);
+                        break;
+
+                    case GET_UPDATES_UP_TO_DATE:
                         mInformationTV.setText("Your OS is up to date");
                         break;
 
-                    case GET_OTA_ERROR:
-                        String retrievalError = OtaMetadataContract.MetadataErrorResponse.extractErrorMessage(payload);
+                    case GET_UPDATES_ERROR:
+                        String retrievalError = UpdateMetadataContract.MetadataErrorResponse.extractErrorMessage(payload);
                         mInformationTV.setText("Could not retrieve updates: " + retrievalError);
                         break;
 
-                    case GET_OTA_RESULT:
-                        mOtaPackage = OtaMetadataContract.OtaMetadataResponse.extractOtaList(payload);
-                        Log.i(TAG, "Found new OTA: " + mOtaPackage);
-                        String versionText = getString(R.string.image_version_message, mOtaPackage.getVersion(), mOtaPackage.getChannel(), String.valueOf(mOtaPackage.getSize()));
+                    case GET_UPDATES_LIST:
+                        List<UpdatePackage> updateList = UpdateMetadataContract.MetadataListResponse.extractUpdateList(payload);
+                        for (UpdatePackage updatePackage : updateList) { Log.i(TAG, "Available update: " + updatePackage); }
+                        mOtaPackage = updateList.get(0);
+                        String versionText = getString(R.string.updates_message, String.valueOf(updateList.size()), mOtaPackage.getVersion(), mOtaPackage.getChannel(), String.valueOf(mOtaPackage.getFileSize()));
                         mInformationTV.setText(Html.fromHtml(versionText, Html.FROM_HTML_MODE_LEGACY));
                         mDownloadButton.setEnabled(true);
                         break;
 
-                    case DOWNLOAD_OTA_ERROR:
-                        String downloadError = OtaDownloadContract.DownloadErrorResponse.parseBundle(payload);
+                    case DOWNLOAD_UPDATE_ERROR:
+                        String downloadError = UpdateDownloadContract.DownloadErrorResponse.extractErrorMessage(payload);
                         mInformationTV.setText("Download failed: " + downloadError);
                         break;
 
-                    case DOWNLOAD_OTA_PROGRESS:
-                        int downloadProgress = OtaDownloadContract.DownloadProgressResponse.parseBundle(payload);
+                    case DOWNLOAD_UPDATE_PROGRESS:
+                        int downloadProgress = UpdateDownloadContract.DownloadProgressResponse.extractDownloadProgress(payload);
                         setProgress(downloadProgress);
                         break;
 
-                    case DOWNLOAD_OTA_SUCCESS:
-                        mOtaPackage = OtaDownloadContract.DownloadSuccessResponse.parseBundle(payload);
-                        Log.i(TAG, "OTA download finished: " + mOtaPackage);
+                    case DOWNLOAD_UPDATE_SUCCESS:
+                        String downloadedUpdateId = UpdateDownloadContract.DownloadSuccessResponse.extractUpdateId(payload);
+                        Log.i(TAG, "OTA download finished for " + downloadedUpdateId);
                         mInformationTV.setText("Download successful");
                         mFindUpdateButton.setEnabled(true);
                         mDownloadButton.setEnabled(false);
                         mFlashButton.setEnabled(true);
                         break;
 
-                    case INSTALL_OTA_ERROR:
-                        String installationError = OtaInstallationContract.InstallationErrorResponse.parseBundle(payload);
+                    case INSTALL_UPDATE_ERROR:
+                        String installationError = UpdateInstallationContract.InstallationErrorResponse.extractErrorMessage(payload);
                         mInformationTV.setText("Installation failed: " + installationError);
                         break;
 
-                    case INSTALL_OTA_PROGRESS:
-                        int installProgress = OtaInstallationContract.InstallationProgressResponse.parseBundle(payload);
+                    case INSTALL_UPDATE_PROGRESS:
+                        int installProgress = UpdateInstallationContract.InstallationProgressResponse.extractInstallationProgress(payload);
                         setProgress(installProgress);
                         break;
 
-                    case INSTALL_OTA_REBOOT_REQUIRED:
+                    case INSTALL_UPDATE_REBOOT_REQUIRED:
                         mInformationTV.setText("Installation complete, reboot required");
                         mFlashButton.setEnabled(false);
                         break;
@@ -350,7 +316,7 @@ public class MainActivity extends AppCompatActivity
                         Log.e(TAG, "Unknown message");
                 }
             }
-            catch (MessengerConfig.InvalidPayloadException e)
+            catch (InvalidUpdatePayloadException e)
             {
                 Log.e(TAG, "Invalid message payload " + e.getMessage());
                 mInformationTV.setText("Error " + e.getMessage());
