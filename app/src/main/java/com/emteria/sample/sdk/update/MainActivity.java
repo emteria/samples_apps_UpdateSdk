@@ -14,7 +14,6 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ProgressBar;
-import android.widget.Switch;
 import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -48,7 +47,6 @@ public class MainActivity extends AppCompatActivity
     private Button mFindUpdateButton;
     private Button mDownloadButton;
     private Button mFlashButton;
-    private Switch mConnectionSwitch;
     private TextView mInformationTV;
     private ProgressBar mProgressBar;
 
