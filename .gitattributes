@@ -9,5 +9,12 @@
 ###############################################################################
 
 *.bat       text eol=crlf
-*.gradle    text eol=lf
-*.java      text eol=lf
+
+*.gradle    text diff=java
+*.java      text diff=java
+*.kt        text diff=kotlin
+
+*.class     binary
+*.jar       binary
+*.so        binary
+*.jks       binary
