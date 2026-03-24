@@ -2,6 +2,7 @@ package com.emteria.sample.sdk.update;
 
 import android.content.ComponentName;
 import android.content.Context;
+import android.content.Intent;
 import android.content.ServiceConnection;
 import android.os.Bundle;
 import android.os.Handler;
@@ -77,8 +78,6 @@ public class MainActivity extends AppCompatActivity
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        bindUpdateService();
-
         mFindUpdateButton = findViewById(R.id.get_update_button);
         mDownloadButton = findViewById(R.id.download_update_button);
         mFlashButton = findViewById(R.id.flash_device_button);
@@ -90,6 +89,7 @@ public class MainActivity extends AppCompatActivity
         mFlashButton.setEnabled(false);
 
         mResponseMessenger = new Messenger(new CallbackHandler());
+        bindUpdateService();
     }
 
     private void bindUpdateService()
@@ -97,8 +97,9 @@ public class MainActivity extends AppCompatActivity
         Log.d(TAG, "bindUpdateService()");
         if (!mBound)
         {
-            boolean binding = bindService(MessengerConfig.getServiceBindIntent(), mConnection, Context.BIND_AUTO_CREATE);
-            Log.i(TAG, "Service bind result: " + binding);
+            Intent bindIntent = MessengerConfig.getServiceBindIntent();
+            boolean bindResult = bindService(bindIntent, mConnection, Context.BIND_AUTO_CREATE);
+            Log.i(TAG, "Service bind result: " + bindResult);
         }
     }
 
