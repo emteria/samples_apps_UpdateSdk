@@ -1,8 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <uses-permission android:name="emteria.permission.MANAGE_OS_UPDATES" />
-
     <queries>
         <package android:name="com.emteria.update" />
     </queries>
