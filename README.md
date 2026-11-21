@@ -22,9 +22,8 @@ All of this lives in a single screen — see
   `com.emteria.update/.UpdateService`, which is part of emteria OS. On stock
   Android / AOSP or a plain emulator the bind fails and the operations do
   nothing.
-- **No special permission is required.** The update service is exported and
-  freely bindable — the app only needs to run on a device where the service is
-  present.
+- **Declare `emteria.permission.MANAGE_OS_UPDATES`.** It is required for
+  binding to the update service.
 - Build targets: `compileSdk 34`, `targetSdk 34`, `minSdk 30` (Android 11).
 - Bundled SDK: `app/src/main/libs/emteria-update-sdk-v1.7.jar`.
 
@@ -74,7 +73,15 @@ switches on the `ResponseReason`.
    </queries>
    ```
 
-That is the complete setup — no permissions to request.
+4. Declare the permission required for binding to the update service in
+   `AndroidManifest.xml`:
+
+   ```xml
+   <uses-permission android:name="emteria.permission.MANAGE_OS_UPDATES" />
+   ```
+
+That is the complete setup. The permission is granted at install time, so
+there is nothing to request at runtime.
 
 ## Operations
 
@@ -166,8 +173,8 @@ download/installation progress.
 ## Troubleshooting
 
 - **"Service not bound, try again"** — the OTA service could not be bound.
-  Confirm you are on an emteria OS device and that the `<queries>` entry above is
-  present in your manifest.
+  Confirm you are on an emteria OS device and that the `<queries>` entry and the
+  `MANAGE_OS_UPDATES` permission above are present in your manifest.
 - **All operations silent / no response** — same cause as above; the service is
   absent on non-emteria systems.
 - **OS version reads `0.0.0`** — the app is not running on emteria OS.
